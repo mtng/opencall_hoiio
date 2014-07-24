@@ -1,4 +1,5 @@
-Integration of Opencall and Hoiio API
+Integration of Opencall and Hoiio API.<br>
+Currently integrating for Record and Hangup modules
 
 # Opencall
 	url: http://www.ocall.org
