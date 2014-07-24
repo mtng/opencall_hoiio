@@ -1,0 +1,20 @@
+<p>
+You missed a call - please see the details below:
+</p>
+
+<p>
+<b>When:</b> [date_in]<br />
+<b>Caller number:</b> [origin_number]<br />
+<b>Dialled number:</b> [dialled_number]<br />
+<b>Advert:</b> [advert] (Adgroup: [adgroup], Campaign: [campaign])<br />
+<b>Failure Reason:</b> [reason]
+</p>
+
+<p>
+To view this information online, please visit: <a
+href="[lead_rescue_url]">[lead_rescue_url]</a>
+</p>
+
+<p>
+<b>Powered by LeadRescue</b> - an <a href="http://www.ocall.org/?utm_source=leadrescue-signature&utm_medium=email&utm_campaign=email+signatures">Opencall</a> Service<br />
+</p>

@@ -1,0 +1,30 @@
+{% extends 'OnCallAdminBundle::item.html.twig' %}
+
+{% set name = 'num.adgroup' | trans %}
+{% set url_prefix = 'adgroup' %}
+
+{% block main_title %}
+{% trans %}title.adgroups{% endtrans %}
+{% endblock %}
+
+{% block title %}
+{{ parent.getName }} <small>{% trans %}adg.campaign{% endtrans %}</small>
+{% endblock %}
+
+{% block delete_text %}
+<p>{% trans %}adg.delete_text{% endtrans %}</p>
+{% endblock %}
+
+{% block breadcrumb %}
+<li>
+    <a href="/client/{{ parent.getClient.getID }}/campaigns?{{ params_child }}">{{ parent.getClient.getName }}</a>
+    <i class="icon-angle-right"></i>
+</li>
+<li>
+    {{ parent.getName }}
+    <i class="icon-angle-right"></i>
+</li>
+<li>
+    {% trans %}adg.adgroups{% endtrans %}
+</li>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends '::base.html.twig' %}
+
+{% block main_title %}
+{% trans %}title.number_management{% endtrans %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+function filter_redirect()
+{
+    var ftype = $('#filter_type').val();
+    var fusage = $('#filter_usage').val();
+
+    window.location.replace('/numbers?usage=' + fusage + '&type=' + ftype);
+}
+
+$(document).ready(function() {
+    $('#filter_usage').change(filter_redirect);
+    $('#filter_type').change(filter_redirect);
+
+    $('.edit_num').click(function() {
+        var num_id = $(this).data('id');
+        $('#edit_form').attr('action', '/number/' + num_id);
+        $.get('/number/' + num_id, function(num_data) {
+            $('#num_id').html(num_data.id);
+            $('#num_provider').val(num_data.provider);
+            $('#num_type').val(num_data.type);
+            $('#num_price_buy').val(num_data.price_buy_formatted);
+            $('#num_price_resale').val(num_data.price_resale_formatted);
+        }, 'json');
+    });
+
+    $('.delete_num').click(function() {
+        var num_id = $(this).data('id');
+        $('#dnum_id').html(num_id);
+        $('#dnum_form').attr('action', '/number/' + num_id + '/delete');
+    });
+
+    $('#assign_submit').click(function() {
+        var acc_id = $('#assign_acc_id').val();
+        $('#assign_form').attr('action', '/account/' + acc_id + '/numbers').submit();
+    });
+});
+</script>
+{% endblock %}
+
+{% block body %}
+<!-- BEGIN PAGE CONTAINER-->
+<div class="container-fluid">
+    <!-- BEGIN PAGE HEADER-->
+    <div class="row-fluid">
+        <div class="span12">    
+    
+            <h3 class="page-title">
+                Number Management 
+            </h3>
+            {{ flash.display_flash_messages }}
+            <button class="btn green" style="margin-bottom: 4px;"  data-toggle="modal" href="#addNumbers"><i class="icon-plus"></i> Bulk Add Numbers to Pool</button> 
+                            
+            <br /><br /><br />
+            Assign Selected to Client: 
+            <select id="assign_acc_id" class="small m-wrap" tabindex="1" style="margin-bottom: 4px;">
+                <option value="0">-</option>
+                {% for client in clients %}
+                <option value="{{ client.getID }}">{{ client.getUser.getBusinessName }} - {{ client.getName }}</option>
+                {% endfor %}
+            </select>
+            <button id="assign_submit" class="btn blue" style="margin-bottom: 4px;" ><i class="m-icon-swapright m-icon-white"></i> Assign</button>
+            
+            <span style="padding-left: 150px;">Filter By Usage:</span> 
+            <select id="filter_usage" class="small m-wrap" tabindex="1">
+                <option value="" {{ (usage is sameas('')) ? 'selected="selected"' : '' }}>-</option>
+                <option value="1" {{ (usage is sameas('1')) ? 'selected="selected"' : '' }}>In Use</option>
+                <option value="0" {{ (usage is sameas('0')) ? 'selected="selected"' : '' }}>Not In Use</option>
+            </select>
+
+            Filter By Type: 
+            <select id="filter_type" class="small m-wrap" tabindex="1">
+                <option value="">-</option>
+                {% for value,text in types %}
+                    <option value="{{ value }}" {{ (type == value) ? 'selected="selected"' : '' }}>{{ text }}</option>
+                {% endfor %}
+            </select>       
+            <br />
+
+            <!-- Add Number MODAL -->
+            <div id="addNumbers" class="modal hide fade" tabindex="-1" data-width="760">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h3>Add Numbers</h3>
+                    <ul>
+                        <li>Paste the numbers you want to add below</li>
+                        <li>Each number should be on a new line</li>
+                        <li>Do not enter spaces or + </li>
+                        <li>Include the country code</li>
+                        <li>e.g. 85266821490</li>
+                    </ul>
+
+                </div>
+                <form method="post">
+                    <div class="modal-body">
+                        <div class="row-fluid">
+                            <div class="span12">
+                                <h4>Number Details</h4>
+                                <p>
+                                    Numbers *<br />
+                                    <textarea name="numbers" class="span12 m-wrap"></textarea>
+                                </p>
+                                <p>
+                                    Number Provider (e.g. CiticTelecom) *<br />
+                                    <input name="provider" type="text" class="span12 m-wrap">
+                                </p>
+                                <p>
+                                    Number Type (e.g. Class 1)*<br />
+                                    <select name="type">
+                                    {% for value,text in types %}
+                                        <option value="{{ value }}">{{ text }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </p>
+                                <p>
+                                    Cost Per Number (for us) in USD *<br />
+                                    <input name="price_buy" type="text" class="span12 m-wrap">
+                                </p>
+                                <p>
+                                    Resale Price in USD*<br />
+                                    <input name="price_resale" type="text" class="span12 m-wrap">
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="modal-footer">
+                        <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                        <input type="submit" class="btn green" value="Add numbers" />
+                    </div>
+                </form>
+            </div>                                                          
+            <!-- End Add Number MODAL -->
+            
+            <!-- Edit Number MODAL -->
+            <div id="editNumber" class="modal hide fade" tabindex="-1" data-width="760">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h3>Edit Number</h3>
+
+
+                </div>
+                <form id="edit_form" method="post" action="/number/0">
+                <div class="modal-body">
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <p>Number: <span id="num_id"></span> </p>
+                            <p>
+                                Number Provider (e.g. CiticTelecom) *<br />
+                                <input id="num_provider" name="provider" type="text" class="span12 m-wrap" />
+                            </p>
+                            <p>
+                                Number Type (e.g. Class 1)*<br />
+                                <select id="num_type" name="type">
+                                {% for value,text in types %}
+                                    <option value="{{ value }}">{{ text }}</option>
+                                {% endfor %}
+                                </select>
+                            </p>
+                            <p>
+                                Cost Per Number (for us) in USD *<br />
+                                <input id="num_price_buy" name="price_buy" type="text" class="span12 m-wrap" />
+                            </p>
+                            <p>
+                                Resale Price in USD*<br />
+                                <input id="num_price_resale" name="price_resale" type="text" class="span12 m-wrap" />
+                            </p>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                    <input type="submit" class="btn green" value="Save changes" />
+                </div>
+                </form>
+            </div>                                                          
+            <!-- End Add Number MODAL -->
+            
+                        <!-- DELETE Number MODAL -->
+                        <div id="deleteNumber" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                                <h3>Delete <span id="dnum_id">85266821490</span>?</h3>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn pull-left green" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                                <form id="dnum_form" method="post" action="number/0/delete">
+                                <input type="submit" class="btn red" value="Delete Number" />
+                                </form>
+                            </div>
+                        </div>
+                        <!-- END Number MODAL -->
+            <form id="assign_form" method="post" action="/account/0/numbers">
+            <table class="table-bordered table-striped table-condensed cf">
+                <thead>
+                    <tr>
+                        <th style="width:8px;"></th>
+                        <th style="width:108px;">Number</th>
+                        <th>Type</th>
+                        <th>Provider</th>
+                        <th>In Use</th>
+                        <th>Username</th>
+                        <th>Client</th>
+                        <th>Buy Price</th>
+                        <th>Resale Price</th>
+                        <th style="width:90px;">Date Added to System</th>
+                        <th style="width:90px;">Date Added to Client</th>
+                        <th>Last Called<br /><small>dd/mm/yy hh:mm</small></th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for num in numbers %}
+                    <tr>
+                        <td><input name="number_ids[]" type="checkbox" class="checkboxes" value="{{ num.getID }}" /></td>
+                        <td>{{ num.getIDFormatted }}</td>
+                        <td>{{ num.getTypeText }}</td>
+                        <td>{{ num.getProvider }}</td>
+                        <td>{{ num.isInUse ? 'Yes' : 'No' }}</td>
+                        <td>{{ num.getClient ? num.getClient.getUser.getUsername : '-' }}</td>
+                        <td>{{ num.getClient ? num.getClient.getName : '-' }}</td>
+                        <td>{{ num.getPriceBuyFormatted }} USD</td>
+                        <td>{{ num.getPriceResaleFormatted }} USD</td>
+                        <td>{{ num.getDateCreateFormatted }}</td>
+                        <td>{{ num.getDateAssignFormatted }}</td>
+                        <td>{{ num.getDateLastCallFormatted }}</td>
+                        <td>
+                            <button href="#editNumber" data-toggle="modal" data-id="{{ num.getID }}" role="button" class="btn mini edit_num" ><i class="icon-edit"></i> edit</button>
+                            {% if (not num.isInUse) %}
+                            <button href="#deleteNumber" data-toggle="modal" data-id="{{ num.getID }}" role="button" class="btn mini delete_num"><i class="icon-trash"></i> delete</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

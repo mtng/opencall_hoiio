@@ -1,0 +1,244 @@
+# fos user bundle routes
+fos_user_security:
+    resource: "@FOSUserBundle/Resources/config/routing/security.xml"
+
+# admin index page (goes to account index)
+oncall_admin_main:
+    pattern: /
+    defaults: { _controller: OnCallAdminBundle:Main:index }
+    methods: [GET]
+
+# account routes
+oncall_admin_accounts:
+    pattern: /accounts
+    defaults: { _controller: OnCallAdminBundle:Account:index }
+    methods: [GET]
+
+oncall_admin_account_create:
+    pattern: /account
+    defaults: { _controller: OnCallAdminBundle:Account:create }
+    methods: [POST]
+
+oncall_admin_account_get:
+    pattern: /account/{id}
+    defaults: { _controller: OnCallAdminBundle:Account:get }
+    methods: [GET]
+
+oncall_admin_account_update:
+    pattern: /account/{id}
+    defaults: { _controller: OnCallAdminBundle:Account:update }
+    methods: [POST]
+
+oncall_admin_password_form:
+    pattern: /password
+    defaults: { _controller: OnCallAdminBundle:Account:passwordForm }
+    methods: [GET]
+
+oncall_admin_password_submit:
+    pattern: /password
+    defaults: { _controller: OnCallAdminBundle:Account:passwordSubmit }
+    methods: [POST]
+
+# admin number routes
+oncall_admin_numbers:
+    pattern: /numbers
+    defaults: { _controller: OnCallAdminBundle:Number:index }
+    methods: [GET]
+
+oncall_admin_number_create_multiple:
+    pattern: /numbers
+    defaults: { _controller: OnCallAdminBundle:Number:createMultiple }
+    methods: [POST]
+
+oncall_admin_number_get:
+    pattern: /number/{id}
+    defaults: { _controller: OnCallAdminBundle:Number:get }
+    methods: [GET]
+
+oncall_admin_number_update:
+    pattern: /number/{id}
+    defaults: { _controller: OnCallAdminBundle:Number:update }
+    methods: [POST]
+
+oncall_admin_number_assign:
+    pattern: /account/{client_id}/numbers
+    defaults: { _controller: OnCallAdminBundle:Number:assign }
+    methods: [POST]
+
+oncall_admin_number_delete:
+    pattern: /number/{id}/delete
+    defaults: { _controller: OnCallAdminBundle:Number:delete }
+    methods: [POST]
+
+oncall_admin_number_unassign:
+    pattern: /number/{id}/unassign
+    defaults: { _controller: OnCallAdminBundle:Number:unassign }
+    methods: [POST]
+
+# client number routes
+oncall_admin_client_numbers:
+    pattern: /client/{id}/numbers
+    defaults: { _controller: OnCallAdminBundle:Number:clientIndex }
+    methods: [GET]
+
+oncall_admin_number_request:
+    pattern: /client/{id}/numbers/request
+    defaults: { _controller: OnCallAdminBundle:Number:request }
+    methods: [POST]
+
+#client routes
+oncall_admin_clients:
+    pattern: /clients
+    defaults: { _controller: OnCallAdminBundle:Client:index }
+    methods: [GET]
+
+oncall_admin_client_add:
+    pattern: /clients
+    defaults: { _controller: OnCallAdminBundle:Client:create }
+    methods: [POST]
+
+oncall_admin_client_get:
+    pattern: /client/{id}
+    defaults: { _controller: OnCallAdminBundle:Client:get }
+    methods: [GET]
+
+oncall_admin_client_update:
+    pattern: /client/{id}
+    defaults: { _controller: OnCallAdminBundle:Client:update }
+    methods: [POST]
+
+oncall_admin_client_delete:
+    pattern: /client/{id}/delete
+    defaults: { _controller: OnCallAdminBundle:Client:delete }
+    methods: [POST]
+
+oncall_admin_client_alert:
+    pattern: /client/{id}/alert
+    defaults: { _controller: OnCallAdminBundle:Client:alert }
+    methods: [POST]
+
+#campaign routes
+oncall_admin_campaigns:
+    pattern: /client/{id}/campaigns
+    defaults: { _controller: OnCallAdminBundle:Campaign:index }
+    methods: [GET]
+
+oncall_admin_camp_add:
+    pattern: /client/{id}/campaigns
+    defaults: { _controller: OnCallAdminBundle:Campaign:create }
+    methods: [POST]
+
+oncall_admin_camp_get:
+    pattern: /campaign/{id}
+    defaults: { _controller: OnCallAdminBundle:Campaign:get }
+    methods: [GET]
+
+oncall_admin_camp_update:
+    pattern: /campaign/{id}
+    defaults: { _controller: OnCallAdminBundle:Campaign:update }
+    methods: [POST]
+
+oncall_admin_camp_delete:
+    pattern: /campaign/{id}/delete
+    defaults: { _controller: OnCallAdminBundle:Campaign:delete }
+    methods: [POST]
+
+#ad group routes
+oncall_admin_adgroups:
+    pattern: /campaign/{id}/adgroups
+    defaults: { _controller: OnCallAdminBundle:AdGroup:index }
+    methods: [GET]
+
+oncall_admin_adgroups_dropdown:
+    pattern: /campaign/{id}/adgroups/dropdown
+    defaults: { _controller: OnCallAdminBundle:AdGroup:dropdown }
+    methods: [GET]
+
+oncall_admin_adgroup_create:
+    pattern: /campaign/{id}/adgroups
+    defaults: { _controller: OnCallAdminBundle:AdGroup:create }
+    methods: [POST]
+
+oncall_admin_adgroup_get:
+    pattern: /adgroup/{id}
+    defaults: { _controller: OnCallAdminBundle:AdGroup:get }
+    methods: [GET]
+
+oncall_admin_adgroup_update:
+    pattern: /adgroup/{id}
+    defaults: { _controller: OnCallAdminBundle:AdGroup:update }
+    methods: [POST]
+
+oncall_admin_adgroup_delete:
+    pattern: /adgroup/{id}/delete
+    defaults: { _controller: OnCallAdminBundle:AdGroup:delete }
+    methods: [POST]
+
+#advert routes
+oncall_admin_adverts:
+    pattern: /adgroup/{id}/adverts
+    defaults: { _controller: OnCallAdminBundle:Advert:index }
+    methods: [GET]
+
+oncall_admin_adverts_dropdown:
+    pattern: /adgroup/{id}/adverts/dropdown
+    defaults: { _controller: OnCallAdminBundle:Advert:dropdown }
+    methods: [GET]
+
+oncall_admin_advert_create:
+    pattern: /adgroup/{id}/adverts
+    defaults: { _controller: OnCallAdminBundle:Advert:create }
+    methods: [POST]
+
+oncall_admin_advert_get:
+    pattern: /advert/{id}
+    defaults: { _controller: OnCallAdminBundle:Advert:get }
+    methods: [GET]
+
+oncall_admin_advert_update:
+    pattern: /advert/{id}
+    defaults: { _controller: OnCallAdminBundle:Advert:update }
+    methods: [POST]
+
+oncall_admin_advert_delete:
+    pattern: /advert/{id}/delete
+    defaults: { _controller: OnCallAdminBundle:Advert:delete }
+    methods: [POST]
+
+#call log
+oncall_admin_call_log:
+    pattern: /client/{id}/call_log
+    defaults: { _controller: OnCallAdminBundle:CallLog:index }
+    methods: [GET]
+
+oncall_admin_call_log_more:
+    pattern: /client/{client_id}/call_log/more/{last_id}
+    defaults: { _controller: OnCallAdminBundle:CallLog:more }
+    methods: [GET]
+
+oncall_admin_call_log_csv:
+    pattern: /client/{client_id}/call_log/csv
+    defaults: { _controller: OnCallAdminBundle:CallLog:csv }
+    methods: [GET]
+
+# lead rescue
+oncall_admin_lrescue:
+    pattern: /client/{id}/lead_rescue
+    defaults: { _controller: OnCallAdminBundle:LeadRescue:index }
+    methods: [GET]
+
+oncall_admin_lrescue_more:
+    pattern: /client/{client_id}/lead_rescue/more/{last_id}
+    defaults: { _controller: OnCallAdminBundle:LeadRescue:more }
+    methods: [GET]
+
+oncall_admin_lrescue_csv:
+    pattern: /client/{client_id}/lead_rescue/csv
+    defaults: { _controller: OnCallAdminBundle:LeadRescue:csv }
+    methods: [GET]
+
+# locale
+oncall_admin_locale:
+    pattern: /locale/{locale}
+    defaults: { _controller: OnCallAdminBundle:Locale:change }
+    methods: [GET]

@@ -1,0 +1,689 @@
+{% extends '::base.html.twig' %}
+
+{% block plugins %}
+<script src="assets/plugins/bootstrap-daterangepicker/date.js" type="text/javascript"></script>
+<script src="assets/plugins/bootstrap-daterangepicker/daterangepicker.js" type="text/javascript"></script> 
+<script src="assets/plugins/highcharts/highcharts.js" type="text/javascript"></script>
+<script src="assets/plugins/highcharts/modules/exporting.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block javascript %}
+{% block ajax_update_item %}
+<script type="text/javascript">
+    function update_item(data)
+    {
+        $('.item_name').val(data.name);
+        $('.item_name_text').html(data.name);
+        $('.item_delete_button').html('{% trans %}text.delete{% endtrans %}: ' + data.name);
+        $('.item_status').val(data.status);
+    }
+</script>
+{% endblock %}
+
+<script type="text/javascript">
+jQuery(document).ready(function() {
+    // START DATE RANGE
+    // date range settings
+    var date_from = new Date({{ agg_filter.getDateFromUTC }});
+    var date_to = new Date({{ agg_filter.getDateToUTC }});
+
+    var daily_from = new Date({{ filters['daily'].getDateFromUTC }});
+    var daily_to = new Date({{ filters['daily'].getDateToUTC }});
+
+    $('#aggregate_range').daterangepicker({
+        ranges: {
+            '{% trans %}idate.today{% endtrans %}': ['today', 'today'],
+            '{% trans %}idate.yesterday{% endtrans %}': ['yesterday', 'yesterday'],
+            '{% trans %}idate.7_days{% endtrans %}': [Date.today().add({
+                    days: -6
+                }), 'today'],
+            '{% trans %}idate.30_days{% endtrans %}': [Date.today().add({
+                    days: -29
+                }), 'today'],
+            '{% trans %}idate.this_month{% endtrans %}': [Date.today().moveToFirstDayOfMonth(), Date.today().moveToLastDayOfMonth()],
+            '{% trans %}idate.last_month{% endtrans %}': [Date.today().moveToFirstDayOfMonth().add({
+                    months: -1
+                }), Date.today().moveToFirstDayOfMonth().add({
+                    days: -1
+                })]
+        },
+        opens: (App.isRTL() ? 'right' : 'left'),
+        format: 'MM/dd/yyyy',
+        separator: ' to ',
+        startDate: date_from,
+        endDate: date_to,
+        minDate: '01/01/2013',
+        maxDate: '12/31/2017',
+        locale: {
+            applyLabel: 'Submit',
+            fromLabel: 'From',
+            toLabel: 'To',
+            customRangeLabel: '{% trans %}idate.custom_range{% endtrans %}',
+            daysOfWeek: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+            monthNames: [
+                '{% trans %}idate.january{% endtrans %}',
+                '{% trans %}idate.february{% endtrans %}',
+                '{% trans %}idate.march{% endtrans %}',
+                '{% trans %}idate.april{% endtrans %}',
+                '{% trans %}idate.may{% endtrans %}',
+                '{% trans %}idate.june{% endtrans %}',
+                '{% trans %}idate.july{% endtrans %}',
+                '{% trans %}idate.august{% endtrans %}',
+                '{% trans %}idate.september{% endtrans %}',
+                '{% trans %}idate.october{% endtrans %}',
+                '{% trans %}idate.november{% endtrans %}',
+                '{% trans %}idate.december{% endtrans %}'
+            ],
+            firstDay: 1
+        },
+        showWeekNumbers: true,
+        buttonClasses: ['btn-danger']
+    },
+
+    function (start, end) {
+        App.blockUI(jQuery("#dashboard"));
+        setTimeout(function () {
+            App.unblockUI(jQuery("#dashboard"));
+            App.scrollTo();
+        }, 1000);
+        $('#aggregate_range span').html(start.toString('MMMM d, yyyy') + ' - ' + end.toString('MMMM d, yyyy'));
+        // redirect with params
+        var query_string = '?date_from=' + start.toString('yyyy-MM-dd') + '&date_to=' + end.toString('yyyy-MM-dd');
+        var url = location.protocol + '//' + location.host + location.pathname + query_string;
+        window.location = url;
+    });
+
+    $('#aggregate_range span').html("{{ agg_filter.getDateFromLocale1 | trans }} {{ agg_filter.getDateFromLocale2 }} - {{ agg_filter.getDateToLocale1 | trans }} {{ agg_filter.getDateToLocale2 }}");
+    $('#aggregate_range').show();
+    // END DATE RANGE
+
+    Highcharts.setOptions({
+        lang: {
+            printChart: '{% trans %}idate.print_chart{% endtrans %}',
+            downloadJPEG: '{% trans %}idate.download_jpeg{% endtrans %}',
+            downloadPDF: '{% trans %}idate.download_pdf{% endtrans %}',
+            downloadPNG: '{% trans %}idate.download_png{% endtrans %}',
+            downloadSVG: '{% trans %}idate.download_svg{% endtrans %}',
+            months: [
+                '{% trans %}idate.january{% endtrans %}',
+                '{% trans %}idate.february{% endtrans %}',
+                '{% trans %}idate.march{% endtrans %}',
+                '{% trans %}idate.april{% endtrans %}',
+                '{% trans %}idate.may{% endtrans %}',
+                '{% trans %}idate.june{% endtrans %}',
+                '{% trans %}idate.july{% endtrans %}',
+                '{% trans %}idate.august{% endtrans %}',
+                '{% trans %}idate.september{% endtrans %}',
+                '{% trans %}idate.october{% endtrans %}',
+                '{% trans %}idate.november{% endtrans %}',
+                '{% trans %}idate.december{% endtrans %}'
+            ],
+            shortMonths: [
+                '{% trans %}idate.jan{% endtrans %}',
+                '{% trans %}idate.feb{% endtrans %}',
+                '{% trans %}idate.mar{% endtrans %}',
+                '{% trans %}idate.apr{% endtrans %}',
+                '{% trans %}idate.may{% endtrans %}',
+                '{% trans %}idate.jun{% endtrans %}',
+                '{% trans %}idate.jul{% endtrans %}',
+                '{% trans %}idate.aug{% endtrans %}',
+                '{% trans %}idate.sep{% endtrans %}',
+                '{% trans %}idate.oct{% endtrans %}',
+                '{% trans %}idate.nov{% endtrans %}',
+                '{% trans %}idate.dec{% endtrans %}'
+            ],
+            weekdays: [
+                '{% trans %}idate.sunday{% endtrans %}',
+                '{% trans %}idate.monday{% endtrans %}',
+                '{% trans %}idate.tuesday{% endtrans %}',
+                '{% trans %}idate.wednesday{% endtrans %}',
+                '{% trans %}idate.thursday{% endtrans %}',
+                '{% trans %}idate.friday{% endtrans %}',
+                '{% trans %}idate.saturday{% endtrans %}'
+            ]
+        }
+    });
+
+    // daily chart
+    // START DAILY CHART
+    $('#containerDaily').highcharts({
+        chart: {
+            zoomType: 'x',
+            spacingRight: 0,
+            spacingLeft: 0
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                day: '{% trans %}idate.chart_format{% endtrans %}'
+            },
+            // min: 0.5, 
+            // Kendrick: the value below must be the number of data points -1.5
+            // In this example there are 5 categories (above) so the max should be 5 - 1.5 =3.5
+            // this is so that the graph is to the edge
+            //max: 5.5,
+            labels: {
+                rotation: -45, 
+                style: {
+                  color: '#888'
+                },
+            },
+            // tickInterval: 1
+            tickInterval: 24 * 3600 * 1000, // one day
+        },
+        yAxis: [{ // Calls
+            labels: {
+                format: '{value}',
+                style: {
+                    color: '#888'
+                },
+            },
+            title: {
+                text: '{% trans %}item.calls{% endtrans %}',
+                style: {
+                    color: '#888'
+                }
+            },
+            min: 0,
+        }],
+        tooltip: {
+            shared: true
+        },
+        series: [{
+            type: 'areaspline',
+                    pointPadding: 0,
+                    groupPadding: 0,
+            name: '{% trans %}item.total_calls{% endtrans %}',
+            data: {{ daily.total | json_encode() }},
+                // Kendrick - this date needs to be set in all the series to match what is selected
+                // in the calendar. It automatically counts up the date depending on the "data" above
+                pointStart: daily_from.getTime(),
+                pointInterval: 24 * 3600 * 1000, // one day
+            fillOpacity: 0.2
+        }, {
+            type: 'areaspline',
+                    pointPadding: 0,
+                    groupPadding: 0,
+            name: '{% trans %}item.failed_calls{% endtrans %}',
+            color: '#e7191b',
+            data: {{ daily.failed | json_encode() }},
+                pointStart: daily_from.getTime(),
+                pointInterval: 24 * 3600 * 1000, // one day
+            fillOpacity: 0.2
+        }, {
+            type: 'areaspline',
+                    pointPadding: 0,
+                    groupPadding: 0,
+            name: '{% trans %}item.potential_leads{% endtrans %}',
+            color: '#bbe000',
+            data: {{ daily.plead | json_encode() }},
+                pointStart: daily_from.getTime(),
+                pointInterval: 24 * 3600 * 1000, // one day
+            fillOpacity: 0.2
+        }],
+        credits: {
+            enabled: false
+        }
+    });
+    // END DAILY CHART
+
+    // START HOURLY CHART
+    var hourly_x_label = 0;
+    $('#containerHourly').highcharts({
+        chart: {
+            zoomType: 'x',
+            spacingRight: 0,
+            spacingLeft: 0,
+            width: $('#tab_campaign_daily').width() // Kendrick - hack to make the chart render in the second tab, name needs to change if the 1st tab name changes
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                hour: '%H:%M'
+            },
+            // Kendrick: the value below must be the number of data points -1.5
+            // In this example there are 5 categories (above) so the max should be 5 - 1.5 =3.5
+            // this is so that the graph is to the edge
+            labels: {                
+                rotation: -45, 
+                style: {
+                  color: '#888'
+                },
+                formatter: function() {
+                    if (this.isFirst)
+                        hourly_x_label = 0;
+                    return hourly_x_label++ + ':00';
+                }
+            },
+            tickInterval: 3600 * 1000, // one day
+        },
+        yAxis: [{ // Calls
+            labels: {
+                format: '{value}',
+                style: {
+                    color: '#888'
+                },
+            },
+            title: {
+                text: '{% trans %}item.calls{% endtrans %}',
+                style: {
+                    color: '#888'
+                }
+            },
+            min: 0,
+        }],
+        tooltip: {
+            shared: true,
+            dateTimeLabelFormats: {
+                hour: "%H:%M"
+            }
+        },
+        series: [{
+
+            type: 'column',
+                pointPadding: 0,
+                groupPadding: 0,
+            name: '{% trans %}item.total_calls{% endtrans %}',
+            data: {{ hourly.total | json_encode() }},
+                // Kendrick - even though we're totalling the data for multiple days, we need to specify
+                // a specific date, so ignore the date in "pointStart" here UNLESS we're looking at a single day
+                pointStart: Date.UTC(2013, 18, 12),
+                pointInterval: 3600 * 1000, // one hour
+            fillOpacity: 0.2
+        }, {
+            type: 'column',
+                pointPadding: 0,
+                groupPadding: 0,
+            name: '{% trans %}item.failed_calls{% endtrans %}',
+            color: '#e7191b',
+            data: {{ hourly.failed | json_encode() }},
+                pointStart: Date.UTC(2013, 18, 12),
+                pointInterval: 3600 * 1000, // one hour
+            fillOpacity: 0.2
+        }, {
+            type: 'column',
+                    pointPadding: 0,
+                    groupPadding: 0,
+            name: '{% trans %}item.potential_leads{% endtrans %}',
+            color: '#bbe000',
+            data: {{ hourly.plead | json_encode() }},
+                pointStart: Date.UTC(2013, 18, 12),
+                pointInterval: 3600 * 1000, // one hour
+            fillOpacity: 0.2
+        }],
+        credits: {
+            enabled: false
+        }
+    });
+    // END HOURLY CHART
+
+    // START MODAL AJAX
+    var delete_id = 0;
+
+    $('.edit_button').click(function() {
+        var url = '/{{ url_prefix }}/' + $(this).data('id');
+        $('#edit_form').attr('action', url);
+        $.get(url, update_item, 'json');
+    });
+
+    $('.delete_button').click(function() {
+        delete_id = $(this).data('id');
+        var edit_url = '/{{ url_prefix }}/' + $(this).data('id');
+        $.get(edit_url, update_item, 'json');
+    });
+
+    $('.item_delete_button').click(function() {
+        var delete_url = '/{{ url_prefix }}/' + delete_id + '/delete';
+        $.post(delete_url, function() {
+            location.reload();
+        });
+        return false;
+    });
+    // END MODAL AJAX
+});
+</script>
+{% endblock %}
+
+{% block js_validation %}
+<script>
+// START VALIDATION
+jQuery(document).ready(function() {
+    // add form
+    validate_init('#add_form', {
+        name: {
+            minlength: 2,
+            required: true
+        }
+    });
+
+    // edit form
+    validate_init('#edit_form', {
+        name: {
+            minlength: 2,
+            required: true
+        }
+    });
+});
+// END VALIDATION
+</script>
+{% endblock %}
+
+
+{% block body %}
+<div class="container-fluid">
+<!-- START CAMPAIGNS -->
+    <div class="row-fluid">
+        <div class="span12">
+
+            <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+            <h3 class="page-title">
+            {% block title %}
+            Title
+            {% endblock %}
+            </h3>
+            {{ flash.display_flash_messages }}
+            <ul class="breadcrumb">
+                {% block breadcrumb %}
+                {% endblock %}
+                <li class="pull-right no-text-shadow">
+                    <div id="aggregate_range" class="dashboard-date-range tooltips no-tooltip-on-touch-device responsive" data-tablet="" data-desktop="tooltips" data-placement="top" data-original-title="Change dashboard date range">
+                        <i class="icon-calendar"></i>
+                        <span>{{ agg_filter.getDateFromLocale1 | trans }} {{ agg_filter.getDateFromLocale2 }} - {{ agg_filter.getDateToLocale1 | trans }} {{ agg_filter.getDateToLocale2 }}</span>
+                        <i class="icon-angle-down"></i>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- END PAGE TITLE & BREADCRUMB-->
+        </div>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
+    <div >
+        <!-- BEGIN DASHBOARD STATS -->
+        <div class="row-fluid">
+            <div class="span3 responsive" data-tablet="span6" data-desktop="span3">
+                <div class="dashboard-stat {{ top_color }}">
+                    <div class="visual">
+                        <i class="icon-group"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <a href="{{ log_url }}">
+                            {{ agg_parent.getTotalFormatted }} {% trans %}item.calls{% endtrans %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="span3 responsive" data-tablet="span6" data-desktop="span3">
+                <div class="dashboard-stat {{ top_color }}">
+                    <div class="visual">
+                        <i class="icon-user"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <!-- <a href="{{ log_url }}"> -->
+                            {{ agg_parent.getUniqueFormatted }} {% trans %}item.unique{% endtrans %} <small>({{ agg_parent.getUniquePercentFormatted }}%)</small>
+                            <!-- </a> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="span3 responsive" data-tablet="span6" data-desktop="span3">
+                <div class="dashboard-stat {{ top_color }}">
+                    <div class="visual">
+                        <i class="icon-star"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <a href="{{ log_url }}&dmod=greater&dsec=120">
+                            {{ agg_parent.getPLeadFormatted }} {% trans %}item.leads{% endtrans %} <small>({{ agg_parent.getPLeadPercentFormatted }}%)</small>
+                            </a>
+                        </div>
+                    </div>                
+                </div>
+            </div>
+            <div class="span3 responsive" data-tablet="span6  fix-offset" data-desktop="span3">
+                <div class="dashboard-stat red">
+                    <div class="visual">
+                        <i class="icon-remove-sign"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <a href="{{ log_url }}&failed=1">
+                            {{ agg_parent.getFailedFormatted }} {% trans %}item.failed_calls{% endtrans %} <small>({{ agg_parent.getFailedPercentFormatted }}%)</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- END DASHBOARD STATS -->
+        <div class="clearfix"></div>
+    <div class="row-fluid">
+        
+        <div class="span12">
+            <!-- BEGIN SAMPLE TABLE PORTLET-->
+                <!-- BEGIN PORTLET-->
+                <div class="portlet-body solid bordered">
+                    <div class="portlet-body">
+                        <div class="tabbable tabbable-custom">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#tab_campaign_daily" data-toggle="tab">{% trans %}item.daily{% endtrans %}</a></li>
+                                <li class=""><a href="#tab_campaign_hourly" data-toggle="tab">{% trans %}item.hourly{% endtrans %}</a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="tab_campaign_daily">
+                                    <div id="containerDaily" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                                </div>
+                                <div class="tab-pane" id="tab_campaign_hourly">
+                                    <div id="containerHourly" style="width: auto; min-width: 310px; height: 200px; margin: 0 auto"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END PORTLET-->
+                <button class="btn green" style="margin-bottom: 4px;"  data-toggle="modal" href="#addModal"><i class="icon-plus"></i> {% trans %}item.add_new{% endtrans %} {{ name }}</button>
+                 
+                <div class="portlet-body no-more-tables">
+                    <table class="table-bordered table-striped table-condensed cf">
+                        <thead class="cf">
+                            <tr>
+                                {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                <th></th>
+                                {% endif %}
+                                <th style="width: 140px;">{{ name }} {% trans %}item.name{% endtrans %}</th>
+                                {% if url_prefix == 'advert' %}
+                                    <th style="width: 114px;">{% trans %}item.ad_number{% endtrans %}</th>
+                                    <th style="width: 114px;">{% trans %}item.ad_destination{% endtrans %}</th>
+                                    {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                    <th>{% trans %}item.rules{% endtrans %}<br /><small>({% trans %}item.use{% endtrans %}?)</small></th>
+                                    {% endif %}
+                                {% endif %}
+                                <th>{% trans %}item.total_calls{% endtrans %}</th> 
+                                <th>{% trans %}item.unique_calls{% endtrans %}</th>
+                                <th>{% trans %}item.failed_calls{% endtrans %}</th>
+                                <th titla="calls > 2 mins" alt="calls > 2 mins">{% trans %}item.potential_leads{% endtrans %}</small></th>
+                                <th>% {% trans %}item.unique{% endtrans %}</th>
+                                <th>% {% trans %}item.failed{% endtrans %}</th>
+                                <th>% {% trans %}item.potential{% endtrans %}</th>
+                                <th>{% trans %}item.total_duration{% endtrans %}<br /><small>hh:mm:ss</small></th>
+                                <th>{% trans %}item.avg_duration{% endtrans %}<br /><small>hh:mm:ss</small></th>
+                                <th>{% trans %}num.action{% endtrans %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for child in children %}
+                            <tr>
+                                {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                <td data-title="Status" style="text-align: center;"><i class="{{ child.isActive ? 'icon-ok-sign' : 'icon-remove-sign' }}"></i></td>  
+                                {% endif %}
+                                {% if url_prefix == 'advert' %}
+                                    <td data-title="{{ name }} {% trans %}item.name{% endtrans %}">{{ child.getName }}</td>  
+                                    <td>{{ child.getNumberFormatted }}</td>
+                                    <td>{{ child.getDestinationFormatted }}</td>
+                                    {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                    <td>
+                                        <i class="{{ child.hasXMLReplace ? 'icon-ok-sign' : 'icon-remove-sign' }}"></i>
+                                        <i class="{{ child.shouldXMLOverride ? 'icon-ok-sign' : 'icon-remove-sign' }}"></i>
+                                    </td>
+                                    {% endif %}
+                                {% else %}
+                                    <td data-title="{{ name }} {% trans %}item.name{% endtrans %}"><a href="{{ path(url_child, {'id': child.getID }) }}?{{ params_child }}">{{ child.getName }}</a></td>  
+                                {% endif %}
+                                <td data-title="{% trans %}item.total_calls{% endtrans %}"><a href="{{ log_url }}&{{ child_filter_var }}={{ child.getID }}">{{ agg_table[child.getID].getTotalFormatted }}</a></td>
+                                <td data-title="{% trans %}item.unique_calls{% endtrans %}">
+                                <!-- <a href="{{ log_url }}&{{ child_filter_var }}={{ child.getID }}"> -->
+                                {{ agg_table[child.getID].getUniqueFormatted }}
+                                <!-- </a> -->
+                                </td>
+                                <td data-title="{% trans %}item.failed_calls{% endtrans %}">
+                                <a href="{{ log_url }}&{{ child_filter_var }}={{ child.getID }}&failed=1">{{ agg_table[child.getID].getFailedFormatted }}</a>
+                                </td>
+                                <td data-title="{% trans %}item.potential_leads{% endtrans %}">
+                                <a href="{{ log_url }}&{{ child_filter_var }}={{ child.getID }}&dmod=greater&dsec=120">{{ agg_table[child.getID].getPLeadFormatted }}</a>
+                                </td>
+                                <td data-title="% {% trans %}item.unique{% endtrans %}">{{ agg_table[child.getID].getUniquePercentFormatted }}%</td>
+                                <td data-title="% Failed">{{ agg_table[child.getID].getFailedPercentFormatted }}%</td>
+                                <td data-title="% {% trans %}item.potential_leads{% endtrans %}">{{ agg_table[child.getID].getPLeadPercentFormatted }}%</td>
+                                <td data-title="Total Duration">{{ agg_table[child.getID].getDurationFormatted }}</td>
+                                <td data-title="Avg Duration">{{ agg_table[child.getID].getDurationAverageFormatted }}</td>
+                                <td data-title="Action">
+                                    <button href="#editModal" data-id="{{ child.getID }}" data-toggle="modal" role="button" class="edit_button btn mini" ><i class="icon-edit"></i> {% trans %}text.edit{% endtrans %}</button>
+                                    {% if child.isActive %}
+                                    <button href="#deleteModal" data-id="{{ child.getID }}" data-toggle="modal" role="button" class="delete_button btn mini" ><i class="icon-trash"></i> {% trans %}text.delete{% endtrans %}</button>
+                                    {% endif %}
+                                </td>   
+                            </tr>  
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                <td></td>
+                                <td {% if url_prefix == 'advert' %}colspan="4"{% endif %}><strong>{% trans %}item.totals{% endtrans %}</strong></td>
+                                {% else %}
+                                <td {% if url_prefix == 'advert' %}colspan="3"{% endif %}><strong>{% trans %}item.totals{% endtrans %}</strong></td>
+                                {% endif %}
+                                <td>
+                                <a href="{{ log_url }}">{{ agg_parent.getTotalFormatted }}</a>
+                                </td>
+                                <td>
+                                <a href="{{ log_url }}">{{ agg_parent.getUniqueFormatted }}</a>
+                                </td>
+                                <td>
+                                <a href="{{ log_url }}&failed=1">{{ agg_parent.getFailedFormatted }}</a>
+                                </td>
+                                <td>
+                                <a href="{{ log_url }}&dmod=greater&dsec=120">{{ agg_parent.getPLeadFormatted }}</a>
+                                </td>
+                                <td>{{ agg_parent.getUniquePercentFormatted }}%</td>
+                                <td>{{ agg_parent.getFailedPercentFormatted }}%</td>
+                                <td>{{ agg_parent.getPLeadPercentFormatted }}%</td>
+                                <td>{{ agg_parent.getDurationFormatted }}</td>
+                                <td>{{ agg_parent.getDurationAverageFormatted }}</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                {% block modal_add %}
+                <!-- Add MODAL -->
+                <div id="addModal" class="modal hide fade" tabindex="-1" data-width="760">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                        <h3>{% trans %}item.add{% endtrans %} {{ name }}</h3>
+                    </div>
+                    <form id="add_form" method="post">
+                    <div class="modal-body">
+                        <div class="row-fluid">
+                            <div class="span6">
+                                <h4>{{ name }} {% trans %}item.name{% endtrans %}</h4>
+                                <p class="control-group"><input name="name" type="text" class="span12 m-wrap"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-dismiss="modal" class="btn">{% trans %}text.cancel{% endtrans %}</button>
+                        <input type="submit" class="btn green" value="{% trans %}item.add{% endtrans %} {{ name }}" />
+                    </div>
+                    </form>
+                </div>
+                <!-- End Add MODAL -->
+                {% endblock %}
+
+                {% block modal_edit %}
+                <!-- EDIT MODAL -->
+                <div id="editModal" class="modal hide fade" tabindex="-1" data-width="760">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                        <h3>{% trans %}item.edit{% endtrans %} {{ name }}</h3>
+                    </div>
+                    <form id="edit_form" method="post">
+                    <div class="modal-body">
+                        <div class="row-fluid">
+                            <div class="span6">
+                                <h4>{{ name }} {% trans %}item.name{% endtrans %}</h4>
+                                <p class="control-group"><input type="text" name="name" class="item_name span12 m-wrap"></p>
+                            </div>
+                            {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                            <div class="span6">
+                                <h4>{{ name }} {% trans %}item.status{% endtrans %}</h4>
+                                <p>
+                                    <select name="status" class="item_status small m-wrap" tabindex="1">
+                                        <option value="1">Active</option>
+                                        <option value="0">Inactive</option>
+                                    </select>
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-dismiss="modal" class="btn">{% trans %}text.cancel{% endtrans %}</button>
+                        <input type="submit" class="btn green" value="{% trans %}text.save_changes{% endtrans %}" />
+                    </div>
+                    </form>
+                </div>
+                <!-- End EDIT MODAL -->
+                {% endblock %}
+
+                {% block modal_delete %}
+                <!-- DELETE MODAL -->
+                <div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                        <h3 id="myModalLabel3">{% trans %}text.delete{% endtrans %} "<span class="item_name_text"></span>" {{ name }}</h3>
+                    </div>
+                    <div class="modal-body">
+                    {% block delete_text %}
+                    {% endblock %}
+                    </div>
+                    <form id="delete_form" method="post">
+                    <div class="modal-footer">
+                        <button class="btn pull-left green" data-dismiss="modal" aria-hidden="true">{% trans %}text.cancel{% endtrans %}</button>
+                        <button class="btn red item_delete_button" data-id="0">{% trans %}text.delete{% endtrans %}: MTR</button>
+                    </div>
+                    </form>
+                </div>
+                <!-- END DELETE MODAL -->
+                {% endblock %}
+
+                </div>
+            <!-- END SAMPLE TABLE PORTLET-->
+        </div>
+    </div>
+    <!-- END CAMPAIGNS -->
+</div>
+{% endblock %}

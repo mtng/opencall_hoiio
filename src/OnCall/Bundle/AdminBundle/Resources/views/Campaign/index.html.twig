@@ -1,0 +1,26 @@
+{% extends 'OnCallAdminBundle::item.html.twig' %}
+
+{% set name = 'num.campaign' | trans %}
+{% set url_prefix = 'campaign' %}
+
+{% block main_title %}
+{% trans %}title.campaigns{% endtrans %}
+{% endblock %}
+
+{% block title %}
+{% trans %}camp.all_campaigns{% endtrans %}
+{% endblock %}
+
+{% block delete_text %}
+<p>{% trans %}camp.delete_text{% endtrans %}</p>
+{% endblock %}
+
+{% block breadcrumb %}
+<li>
+    {{ parent.getName }}
+    <i class="icon-angle-right"></i>
+</li>
+<li>
+    {% trans %}camp.campaigns{% endtrans %}
+</li>
+{% endblock %}
