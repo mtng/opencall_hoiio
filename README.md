@@ -10,5 +10,5 @@ Currently integrating for Record and Hangup modules
 	The API is a package, downloaded and stored as folder vendor/hoiio-php
 	Github: https://github.com/Hoiio/hoiio-php
 
-To configure, change parameters in app/config/plivo.yml
+To configure, change parameters in app/config/hoiio.yml
 
